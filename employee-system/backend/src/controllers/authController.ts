@@ -4,7 +4,10 @@ import jwt from "jsonwebtoken";
 import User from "../models/User";
 import { sendPasswordEmail } from "../utils/mail";
 
-// Utility functions
+// ----------------------
+// Utility Functions
+// ----------------------
+
 const toPascalCase = (name: string) => {
   return name
     .split(" ")
@@ -25,6 +28,7 @@ const generateCompanyPassword = (name: string) => {
 // ----------------------
 // 👤 Employee Signup
 // ----------------------
+
 export const employeeSignup = async (req: Request, res: Response) => {
   const { name, email } = req.body;
 
@@ -43,11 +47,11 @@ export const employeeSignup = async (req: Request, res: Response) => {
       role: "employee",
     });
 
-    await sendPasswordEmail(email, password);
+    await sendPasswordEmail(email, password, name);
 
-    res
-      .status(201)
-      .json({ message: "Employee created and password sent to email." });
+    res.status(201).json({
+      message: "Employee created and password sent to email.",
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
@@ -57,6 +61,7 @@ export const employeeSignup = async (req: Request, res: Response) => {
 // ----------------------
 // 🔐 Login
 // ----------------------
+
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -75,10 +80,14 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "1d" }
     );
 
-    return res.json({
-      token,
-      user: { name: user.name, role: user.role, email: user.email },
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // ✅ Localhost पर false रखें
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 दिन
     });
+
+    res.status(200).json({ user }); // ✅ user object वापस भेजें
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
@@ -86,8 +95,9 @@ export const login = async (req: Request, res: Response) => {
 };
 
 // ----------------------
-// 🧑‍💼 Create Initial HR (once only)
+// 🧑‍💼 Create Initial HR
 // ----------------------
+
 export const createInitialHR = async (_req: Request, res: Response) => {
   try {
     const exists = await User.findOne({ role: "hr" });
@@ -109,4 +119,19 @@ export const createInitialHR = async (_req: Request, res: Response) => {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
   }
+};
+
+// ----------------------
+// 🚪 Logout
+// ----------------------
+
+export const logout = (req: Request, res: Response) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/", // ✅ ज़रूरी है - ताकि सही cookie clear हो
+  });
+
+  res.json({ message: "Logged out successfully" });
 };

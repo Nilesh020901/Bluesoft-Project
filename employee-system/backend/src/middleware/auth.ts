@@ -11,10 +11,10 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const token = req.cookies?.token; // ✅ token now from cookies
+
   if (!token) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   try {
@@ -22,8 +22,7 @@ export const authenticate = (
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
-    return;
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 
@@ -34,8 +33,7 @@ export const authorize = (role: "employee" | "hr") => {
     next: NextFunction
   ) => {
     if (req.user?.role !== role) {
-      res.status(403).json({ message: "Forbidden" });
-      return;
+      return res.status(403).json({ message: "Forbidden" });
     }
     next();
   };
