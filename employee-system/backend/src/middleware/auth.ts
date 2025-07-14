@@ -11,7 +11,7 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies?.token; // ✅ token now from cookies
+  const token = req.cookies?.token;
 
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -21,7 +21,10 @@ export const authenticate = (
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as AuthPayload;
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch (err: any) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
     return res.status(401).json({ message: "Invalid token" });
   }
 };
@@ -35,6 +38,6 @@ export const authorize = (role: "employee" | "hr") => {
     if (req.user?.role !== role) {
       return res.status(403).json({ message: "Forbidden" });
     }
-    next();
+    return next();
   };
 };
