@@ -23,14 +23,8 @@ const allowedOrigins = [
 app.use(cookieParser());
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // ✅ Allow cookies to be sent
+    origin: allowedOrigins,
+    credentials: true, // ✅ This tells browser it's okay to send cookies
   })
 );
 app.use(express.json());
