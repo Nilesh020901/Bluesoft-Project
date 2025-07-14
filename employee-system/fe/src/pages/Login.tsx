@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api/axios";
 import { useAuth } from "../context/use-auth";
 import type { AxiosError } from "axios";
 
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,14 +13,10 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
     try {
-      const res = await API.post("/auth/login", { email, password });
-      const { token, user } = res.data;
-      login(user, token);
-
-      if (user.role === "hr") navigate("/hr");
-      else navigate("/employee");
+      await login(email, password);
+      // Redirect based on role
+      navigate(email.includes("hr") ? "/hr" : "/employee");
     } catch (err: unknown) {
       const axiosError = err as AxiosError<{ message: string }>;
       setError(axiosError.response?.data?.message || "Login failed");
@@ -43,6 +37,7 @@ const Login = () => {
           <p className="text-red-500 text-sm text-center -mt-2">{error}</p>
         )}
 
+        {/* Email input */}
         <div>
           <label className="block text-sm font-semibold text-gray-600 mb-1">
             Email
@@ -58,6 +53,7 @@ const Login = () => {
           />
         </div>
 
+        {/* Password input */}
         <div>
           <label className="block text-sm font-semibold text-gray-600 mb-1">
             Password
@@ -73,12 +69,24 @@ const Login = () => {
           />
         </div>
 
+        {/* Submit Button */}
         <button
           type="submit"
           className="w-full py-2 rounded-xl bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-semibold shadow-md transition"
         >
           Login
         </button>
+
+        {/* 🔗 Signup Redirect */}
+        <p className="text-sm text-gray-600 text-center">
+          Don't have an account?{" "}
+          <span
+            onClick={() => navigate("/signup")}
+            className="text-blue-500 hover:underline cursor-pointer"
+          >
+            Signup
+          </span>
+        </p>
       </form>
     </div>
   );

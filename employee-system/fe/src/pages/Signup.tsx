@@ -90,6 +90,16 @@ const Signup = () => {
         <p className="text-xs text-gray-500 text-center">
           You will receive your password on email.
         </p>
+
+        <p className="text-sm text-gray-600 text-center">
+          Already have an account?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            className="text-blue-500 hover:underline cursor-pointer"
+          >
+            Login
+          </span>
+        </p>
       </form>
     </div>
   );
