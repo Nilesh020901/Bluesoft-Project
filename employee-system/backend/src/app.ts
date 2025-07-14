@@ -15,14 +15,25 @@ connectDB();
 
 const app = express();
 
+const allowedOrigins = [
+  "https://bluesoft-project.vercel.app", // ✅ Frontend origin
+  "http://localhost:5173", // ✅ Local development
+];
+
+app.use(cookieParser());
 app.use(
   cors({
-    origin: "https://bluesoft-project.vercel.app", // ✅ Frontend origin
-    credentials: true, // ✅ ताकि cookies काम करें
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // ✅ Allow cookies to be sent
   })
 );
 app.use(express.json());
-app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/hr", hrRoutes);
