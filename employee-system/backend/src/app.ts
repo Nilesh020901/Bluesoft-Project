@@ -17,7 +17,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // ✅ Frontend origin
+    origin: "https://bluesoft-project.vercel.app", // ✅ Frontend origin
     credentials: true, // ✅ ताकि cookies काम करें
   })
 );
